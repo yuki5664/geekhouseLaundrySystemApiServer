@@ -5,13 +5,20 @@ const dynamoDB = new AWS.DynamoDB.DocumentClient({
 });
 
 exports.handler = async event => {
-    getData();
+    let responseBody =  await getData();
+    let status = responseBody.body;
+    let response = JSON.parse(status);
+    let itemDatas = response.Items.map(item => item.data);
+    let JudgedDatas = itemDatas.filter(itemData => itemData !== 0);
+    let JudgedDatasCount = JudgedDatas.length;
+    return JudgedDatasCount >= 2; 
 };
     
 async function getData() {
+    const limit = 3;
     const params = {
         TableName: "geekLaundrySystem",
-        Limit: 3,
+        Limit: limit,
         KeyConditionExpression: "#type = :type",
         ExpressionAttributeNames:{ "#type": "type" },
         ExpressionAttributeValues: { ":type": "data" },
